@@ -29,3 +29,10 @@ resource "aws_iam_role_policy_attachment" "role-policy-attachment-liberty-edr-la
   role       = aws_iam_role.liberty-edr-lab-ec2-ssm-role-2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+
+#resource "aws_iam_role_policy_attachment" "role-policy-attachment-liberty-edr-lab-ec2-ssm-role-2-drs-failback" {
+#  provider = aws.useast2
+#  role       = aws_iam_role.liberty-edr-lab-ec2-ssm-role-2.name
+#  policy_arn = "arn:aws:iam::aws:policy/AWSElasticDisasterRecoveryRecoveryInstancePolicy"
+#}
+

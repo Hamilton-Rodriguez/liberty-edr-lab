@@ -21,6 +21,7 @@ resource "aws_subnet" "liberty-edr-lab-subnet-public1-us-east-1a" {
   cidr_block = "192.168.1.0/27"
   availability_zone = "us-east-1a"
   map_public_ip_on_launch = true
+  tags = {Name = "liberty-edr-lab-subnet-public1-us-east-1a"}
 }
 
 resource "aws_subnet" "liberty-edr-lab-subnet-public2-us-east-1b" {
@@ -28,30 +29,35 @@ resource "aws_subnet" "liberty-edr-lab-subnet-public2-us-east-1b" {
   cidr_block = "192.168.1.32/27"
   availability_zone = "us-east-1b"
   map_public_ip_on_launch = true
+  tags = {Name = "liberty-edr-lab-subnet-public2-us-east-1b"}
 }
 
 resource "aws_subnet" "liberty-edr-lab-subnet-private1-us-east-1a" {
   vpc_id = aws_vpc.liberty-edr-lab-vpc.id
   cidr_block = "192.168.1.64/27"
   availability_zone = "us-east-1a"
+  tags = {Name = "liberty-edr-lab-subnet-private1-us-east-1a"}
 }
 
 resource "aws_subnet" "liberty-edr-lab-subnet-private2-us-east-1b" {
   vpc_id = aws_vpc.liberty-edr-lab-vpc.id
   cidr_block = "192.168.1.96/27"
   availability_zone = "us-east-1b"
+  tags = {Name = "liberty-edr-lab-subnet-private2-us-east-1b"}
 }
 
 resource "aws_subnet" "liberty-edr-lab-subnet-private3-us-east-1a" {
   vpc_id = aws_vpc.liberty-edr-lab-vpc.id
   cidr_block = "192.168.1.128/27"
   availability_zone = "us-east-1a"
+  tags = {Name = "liberty-edr-lab-subnet-private3-us-east-1a"}
 }
 
 resource "aws_subnet" "liberty-edr-lab-subnet-private4-us-east-1b" {
   vpc_id = aws_vpc.liberty-edr-lab-vpc.id
   cidr_block = "192.168.1.160/27"
   availability_zone = "us-east-1b"
+  tags = {Name = "liberty-edr-lab-subnet-private4-us-east-1b"}
 }
 
 # Available CIDR for future use in the VPC: 192.168.1.192/27 and 192.168.1.224/27

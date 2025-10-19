@@ -1,0 +1,284 @@
+
+
+==== Antes del laboratorio ====
+
+
+- En la instancia Webserver:
+
+
+	- Verificar agente SSM en Linux:
+		sudo systemctl status amazon-ssm-agent
+
+	cd /ec2-databases
+	python3 app.py
+
+
+Windows user
+Administrator
+iiJ4-CnAHn@9OSTM$4z)4wkk2IHi?kvc
+
+	http://192.168.1.70:5000/
+
+
+sudo su -
+
+======= Acciones manuales de EDR ========
+
+Instance Profile role (para lo que despliegue el Replication Instance)
+liberty-edr-lab-dr-instance-profile-role
+
+IAM role (de la instancia EC2 origen)
+liberty-edr-lab-drs-basetemplate-DRIDRole
+	- Permission Policies
+		AmazonS3FullAccess
+		AmazonSSMManagedInstanceCore
+		AWSElasticDisasterRecoveryEc2InstancePolicy		***Manual (Terraform no dejó)
+		AWSElasticDisasterRecoveryAgentInstallationPolicy	***Manual (no estaba en las instrucciones)
+
+
+IAM role (de la instancia EC2 recovered)
+liberty-edr-lab-ec2-ssm-role-2
+	- Permission Policies
+		AmazonSSMManagedInstanceCore
+		AWSElasticDisasterRecoveryRecoveryInstancePolicy	***Manual (Terraform no dejó)
+		
+
+
+System Manager Run Command
+	- Filtro: AWSDisasterRecovery
+		  AWSDisasterRecovery-InstallDRAgentOnInstance
+	- Command parameters: us-east-2
+	- Target selection: Specify instance tags
+		Name
+		liberty-edr-lab-linux-webserver-ec2
+
+
+	- Manual:
+		Download the installer
+			curl -O https://aws-elastic-disaster-recovery-agent-installer.s3.amazonaws.com/latest/install_dr_agent.sh
+			chmod +x install_dr_agent.sh
+			sudo ./install_dr_agent.sh --region us-east-2
+
+			wget -O ./aws-replication-installer-init https://aws-elastic-disaster-recovery-us-east-1.s3.us-east-1.amazonaws.com/latest/linux/aws-replication-installer-init
+
+			chmod +x aws-replication-installer-init; sudo ./aws-replication-installer-init
+			us-east-2
+
+
+
+	systemctl status aws-replication-agent
+
+
+
+-----------
+
+
+[root@ip-192-168-1-4 ~]# curl -o aws-replication-installer-init https://aws-elastic-disaster-recovery-us-east-2.s3.us-east-2.amazonaws.com/latest/linux/aws-replication-installer-init
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 21.7M  100 21.7M    0     0  49.5M      0 --:--:-- --:--:-- --:--:-- 49.5M
+
+
+chmod +x aws-replication-installer-init
+
+
+ ./aws-replication-installer-init --region us-east-2 --no-prompt
+The installation of the AWS Replication Agent has started.
+Identifying volumes for replication.
+Identified volume for replication: /dev/xvda of size 8 GiB
+All volumes for replication were successfully identified.
+Downloading the AWS Replication Agent onto the source server...
+
+
+
+
+aws sts get-caller-identity
+
+curl http://169.254.169.254/latest/meta-data		*user-data / Dynamic ??
+
+
+
+aws drs delete-replication-configuration-template --replication-configuration-template-id rct-4e58b82b6031dffff --region us-east-2
+	aws drs describe-replication-configuration-templates --region us-east-2
+
+
+----
+Monitoring with CLI:
+
+
+- List source servers:
+
+	aws drs describe-source-servers --region us-east-2
+
+	→ INITIATING, INITIAL_SYNC, HEALTHY
+	lastSeenByServiceDateTime → confirms agent heartbeat
+
+- Get detailed replication info
+
+	aws drs get-replication-configuration --source-server-id <sourceServerID> --region us-east-2
+
+		Staging subnet
+		Security groups
+		PIT policy
+		Encryption settings
+
+- Check replication progress
+
+	aws drs describe-source-servers --region us-east-2 --query "items[?dataReplicationInfo.status!'HEALTHY'].{ID:sourceServerID,Status:dataReplicationInfo.status,Progress:dataReplicationInfo.initialReplicationProgress}" --output table
+
+
+-----------
+
+
+Console Monitoring
+In the DRS Console:
+
+Go to Source Servers
+Click your server → view Replication status
+
+Look for:
+Initial sync progress
+Lag and Backlog
+Last seen timestamp
+Pending actions (e.g., launch settings, test recovery)
+
+Once status is Healthy, you can:
+Configure launch settings
+Run a non-disruptive drill to validate recovery
+
+--------
+
+Alternative agent installation:
+	https://docs.aws.amazon.com/drs/latest/userguide/linux-agent.html
+
+
+yum update -y
+yum install -y python3
+python3 --version
+
+
+- No olvidar atachar esta policy manualmente:
+	AWSElasticDisasterRecoveryAgentPolicy
+
+
+
+wget -O ./aws-replication-installer-init https://aws-elastic-disaster-recovery-us-east-2.s3.us-east-2.amazonaws.com/latest/linux/aws-replication-installer-init
+wget -O ./aws-replication-installer-init.py https://aws-elastic-disaster-recovery-us-east-2.s3.us-east-2.amazonaws.com/latest/linux/aws-replication-installer-init.py
+
+curl -o aws-replication-installer-init.py https://aws-elastic-disaster-recovery-us-east-2.s3.us-east-2.amazonaws.com/latest/linux/aws-replication-installer-init.py
+
+
+
+chmod +x aws-replication-installer-init
+chmod +x aws-replication-installer-init.py
+
+./aws-replication-installer-init
+sudo python3 ./aws-replication-installer-init.py
+
+
+	WS Region Name:	us-east-2
+	
+
+
+https://skillbuilder.aws/
+Skill builder
+hamrod88@hotmail.com
+Edc34rfv..asd
+
+
+Run command: AWSDisasterRecovery
+
+
+
+--- Después de la instalación del agente y réplica en estado Healthy/Ready ----------------
+
+- Monitorear la réplica (snapshots, PITs alignment):
+
+
+	aws drs describe-source-servers --region us-east-2
+
+		"sourceServerID": "s-45c3a2278cde96703"
+
+
+	aws drs describe-recovery-snapshots --source-server-id s-45c3a2278cde96703 --region us-east-2
+
+	
+ 	- systemctl status aws-replication-agent
+
+
+
+----------------
+
+Drill - Failover - OK
+
+----------------
+
+Replicación Secundario --> Primario
+
+	aws drs describe-source-servers --region us-east-1
+	aws drs describe-recovery-snapshots --source-server-id s-4c6fa0c973c2c01b5 --region us-east-1
+
+		
+
+
+
+
+
+
+
+
+
+
+
+Work zone:
+
+AmazonSSMManagedInstanceCore
+aws drs describe-recovery-snapshots --source-server-id s-4c6fa0c973c2c01b5 --region us-east-2
+
+echo "<h1>Hello from EC2 $(hostname) - V4</h1>" | sudo tee /var/www/html/index.html
+
+
+aws drs describe-replication-configuration-templates --region us-east-1
+rct-3b22cf538eebea86b
+aws drs delete-replication-configuration-template --replication-configuration-template-id rct-3b22cf538eebea86b --region us-east-1
+
+AWSDisasterRecovery
+
+terraform state rm aws_drs_replication_configuration_template.liberty-edr-lab-replication_configuration_template-ohio
+
+
+----
+How to unblock and delete the template
+
+	- List linked source servers
+		aws drs describe-source-servers --region us-east-2
+
+	- Disconnect and delete source servers
+		aws drs disconnect-source-server --source-server-id <source-server-id> --region us-east-2
+		aws drs delete-source-server --source-server-id <source-server-id> --region us-east-2
+
+
+		- This fully removes the server and its replication metadata.
+
+
+	- Check for pending Jobs
+		aws drs describe-jobs --region us-east-2
+
+	- Delete the Completed DRS Jobs
+		aws drs delete-job --job-id drsjob-49452a92fd5c04b82 --region us-east-2
+		aws drs delete-job --job-id drsjob-44b5bbe9e483237fe --region us-east-2
+		aws drs delete-job --job-id drsjob-403dda161095373b2 --region us-east-2
+		aws drs delete-job --job-id drsjob-49a5c16b732d0176c --region us-east-2
+
+-------
+
+
+aws drs delete-job --job-id  --region us-east-2
+aws drs delete-job --job-id drsjob-46b714bf863f79540 --region us-east-2
+
+
+
+
+
+
+	
