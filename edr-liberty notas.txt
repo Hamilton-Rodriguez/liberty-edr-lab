@@ -277,6 +277,14 @@ aws drs delete-job --job-id  --region us-east-2
 aws drs delete-job --job-id drsjob-46b714bf863f79540 --region us-east-2
 
 
+REplication:
+aws drs describe-source-servers --region us-east-2
+
+PIT policy:
+aws drs describe-recovery-snapshots --source-server-id s-xxxxxxxxxxxxxxxxx --region us-east-2
+
+
+
 
 
 
